@@ -1,0 +1,55 @@
+server:
+  port: ${PORT:8085}
+  error:
+    include-message: never
+    include-stacktrace: never
+spring:
+  application:
+    name: ai-service
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${AI_DB_URL:jdbc:postgresql://localhost:5434/ai_db}
+    username: ${AI_DB_USER:ai}
+    password: ${AI_DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+eureka:
+  client:
+    enabled: ${EUREKA_ENABLED:true}
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+security:
+  jwt:
+    issuer: ${JWT_ISSUER:http://localhost:8083}
+    jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8083/.well-known/jwks.json}
+    audience: ${JWT_AUDIENCE:bookstore}
+catalog:
+  base-url: ${CATALOG_URL:http://localhost:8084}
+ai:
+  gemini:
+    base-url: https://generativelanguage.googleapis.com
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:}
+    timeout-seconds: 20
+
+app:
+  docs:
+    enabled: ${SWAGGER_ENABLED:true}
+springdoc:
+  api-docs:
+    enabled: ${app.docs.enabled}
+  swagger-ui:
+    enabled: ${app.docs.enabled}
+    persist-authorization: false
+  paths-to-match: /api/ai/**
