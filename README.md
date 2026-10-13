@@ -1,9 +1,6 @@
 # BookApplication - Catalog và AI microservices
 
-Phần BE2 theo bảng phân công: quản lý Book, Category, Author, Publisher, Search
-trong `catalog-service`; tư vấn, tìm kiếm và đề xuất sách trong `ai-service`.
-Yêu cầu nghiệp vụ được đối chiếu với Nhom2_DACN.pdf, mục 2.3.2, 2.3.3, 2.3.8,
-2.7.2, 2.7.6 và 4.5.1.
+
 
 ## Kiến trúc và phạm vi
 
