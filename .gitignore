@@ -5,4 +5,4 @@
 !.env.example
 **/hs_err_pid*
 .agents
-.AGENTS.md
+AGENTS.md
