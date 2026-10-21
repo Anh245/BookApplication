@@ -1,0 +1,77 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Primary colors
+        primary: '#aa3bff',
+        'primary-light': 'rgba(170, 59, 255, 0.1)',
+        'primary-border': 'rgba(170, 59, 255, 0.5)',
+        
+        // Neutral colors
+        'text-primary': '#6b6375',
+        'text-heading': '#08060d',
+        'bg-primary': '#fff',
+        'border-light': '#e5e4e7',
+        'code-bg': '#f4f3ec',
+        'social-bg': 'rgba(244, 243, 236, 0.5)',
+      },
+      fontFamily: {
+        sans: ['system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
+        heading: ['system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['ui-monospace', 'Consolas', 'monospace'],
+      },
+      fontSize: {
+        'xs': ['12px', '16.8px'],
+        'sm': ['14px', '20.3px'],
+        'base': ['16px', '23.2px'],
+        'lg': ['18px', '26.1px'],
+        'xl': ['20px', '29px'],
+        '2xl': ['24px', '34.8px'],
+        '3xl': ['28px', '40.6px'],
+        '4xl': ['36px', '52.2px'],
+        '5xl': ['48px', '69.6px'],
+        '6xl': ['56px', '81.2px'],
+      },
+      spacing: {
+        '0': '0',
+        '0.5': '2px',
+        '1': '4px',
+        '1.5': '6px',
+        '2': '8px',
+        '2.5': '10px',
+        '3': '12px',
+        '4': '16px',
+        '5': '20px',
+        '6': '24px',
+        '8': '32px',
+        '10': '40px',
+        '12': '48px',
+        '16': '64px',
+        '20': '80px',
+        '24': '96px',
+        '32': '128px',
+      },
+      boxShadow: {
+        'default': 'rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px',
+      },
+      maxWidth: {
+        'container': '1126px',
+      },
+      screens: {
+        'xs': '320px',
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '2xl': '1536px',
+      },
+    },
+  },
+  plugins: [],
+  darkMode: 'class',
+}
