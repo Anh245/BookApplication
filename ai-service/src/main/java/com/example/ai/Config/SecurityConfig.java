@@ -19,12 +19,18 @@ class SecurityConfig {
     JwtDecoder jwtDecoder(@Value("${security.jwt.jwk-set-uri}") String jwks,
                           @Value("${security.jwt.issuer}") String issuer,
                           @Value("${security.jwt.audience}") String audience) {
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwks).build();
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwks)
+                .jwsAlgorithm(org.springframework.security.oauth2.jose.jws.SignatureAlgorithm.RS256).build();
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
-                JwtValidators.createDefaultWithIssuer(issuer),
-                new JwtClaimValidator<String>("sub", value -> value != null && !value.isBlank() && value.length() <= 200),
-                new JwtClaimValidator<java.util.List<String>>("aud",
-                        values -> values != null && values.contains(audience))));
+                JwtValidators.createDefaultWithIssuer(issuer), jwt -> {
+                    if ("service".equals(jwt.getClaims().get("type"))) {
+                        boolean valid = jwt.getExpiresAt() != null && jwt.getAudience().contains(audience)
+                                && jwt.getSubject() != null && !jwt.getSubject().isBlank() && jwt.getSubject().length() <= 200
+                                && jwt.getClaims().get("scope") instanceof String;
+                        return valid ? org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.success() : JwtContract.invalid();
+                    }
+                    return JwtContract.validateUser(jwt, audience);
+                }));
         return decoder;
     }
 
@@ -37,8 +43,9 @@ class SecurityConfig {
         var scopes = new JwtGrantedAuthoritiesConverter();
         var converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            var authorities = new ArrayList<GrantedAuthority>(scopes.convert(jwt));
-            authorities.addAll(roles.convert(jwt));
+            var authorities = new ArrayList<GrantedAuthority>();
+            if ("access".equals(jwt.getClaims().get("type"))) authorities.addAll(roles.convert(jwt));
+            if ("service".equals(jwt.getClaims().get("type"))) authorities.addAll(scopes.convert(jwt));
             return authorities;
         });
         return http.csrf(csrf -> csrf.disable())
@@ -50,7 +57,7 @@ class SecurityConfig {
                     auth
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers("/internal/ai/purchases").hasAuthority("SCOPE_ai.history.write")
-                        .requestMatchers("/api/ai/**").authenticated()
+                        .requestMatchers("/api/ai/**").hasAnyRole("CUSTOMER", "STAFF", "ADMIN")
                         .anyRequest().denyAll();
                 })
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(converter)))

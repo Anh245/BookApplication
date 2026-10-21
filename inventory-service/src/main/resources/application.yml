@@ -1,0 +1,43 @@
+server:
+  port: 8086
+
+security:
+  jwt:
+    issuer: ${JWT_ISSUER:http://localhost:8081}
+    jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8081/.well-known/jwks.json}
+    audience: ${JWT_AUDIENCE:bookstore}
+
+inventory:
+  service-jwt:
+    secret: ${INVENTORY_SERVICE_JWT_SECRET}
+
+spring:
+  config:
+    import: optional:file:./.env[.properties]
+  application:
+    name: inventory-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/inventory_db}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true

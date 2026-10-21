@@ -1,0 +1,11 @@
+{
+  "id": 42,
+  "title": "Effective Java",
+  "price": 150000.50,
+  "description": "Java programming practices",
+  "category": { "id": 1, "name": "Programming" },
+  "publisher": { "id": 2, "name": "Addison-Wesley" },
+  "authors": [{ "id": 3, "name": "Joshua Bloch" }],
+  "createdAt": null,
+  "updatedAt": null
+}

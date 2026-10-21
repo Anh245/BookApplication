@@ -1,0 +1,17 @@
+package com.bookstore.order.payment;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record VnpayIpnResponse(@JsonProperty("RspCode") String code, @JsonProperty("Message") String message) {
+    public static VnpayIpnResponse of(String code) {
+        return new VnpayIpnResponse(code, switch (code) {
+            case "00" -> "Confirm Success";
+            case "01" -> "Order not found";
+            case "02" -> "Order already confirmed";
+            case "04" -> "Invalid amount";
+            case "97" -> "Invalid signature";
+            default -> "Unable to process notification";
+        });
+    }
+}
+

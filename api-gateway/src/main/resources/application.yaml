@@ -23,11 +23,22 @@ spring:
               uri: lb://ai-service
               predicates:
                 - Path=/api/ai/**
-            - id: book-service
-              uri: lb://book-service
-              predicates:
-                - Path=/books/**
             - id: order-service
               uri: lb://order-service
               predicates:
+                - Path=/api/orders/**,/api/cart/**,/api/payments/**
+            - id: order-service-legacy
+              uri: lb://order-service
+              predicates:
                 - Path=/orders/**
+              filters:
+                - PrefixPath=/api
+            - id: user-services
+              uri: lb://user-services
+              predicates:
+                - Path=/api/auth/**,/api/users/**,/api/admin/users/**,/.well-known/jwks.json
+
+            - id: inventory-service
+              uri: lb://inventory-service
+              predicates:
+                - Path=/api/inventory/**

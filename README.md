@@ -1,5 +1,9 @@
 # BookApplication - Catalog và AI microservices
 
+JWT và phân quyền cho order/inventory: xem
+[hướng dẫn cấu hình, quyền API và kiểm thử](docs/order-inventory-security.md).
+Callback VNPay và giới hạn môi trường giả lập: xem [hướng dẫn IPN](docs/vnpay-ipn.md).
+
 
 
 ## Kiến trúc và phạm vi
@@ -29,6 +33,8 @@ flowchart LR
   Sách đã ẩn không xuất hiện trong API đọc/tìm kiếm/AI. Danh mục, tác giả và nhà xuất bản
   còn được sách (kể cả sách ẩn) tham chiếu không thể xóa.
 - Các module cũ được giữ nguyên; gateway vẫn giữ `/books/**` và `/orders/**`.
+  Order hiện nhận `/api/orders/**`, `/api/cart/**`, `/api/payments/**` qua gateway;
+  alias `/orders/**` được thêm tiền tố `/api` trước khi chuyển tới order-service.
   API mới dùng `/api/catalog/**`, `/api/ai/**`. Hai API sách cũ/mới có dữ liệu độc lập;
   frontend mới cần chuyển sang catalog. Không tự sao chép hoặc xóa dữ liệu cũ.
 - PostgreSQL có database/user riêng cho từng service. Flyway tạo schema có khóa ngoại,
@@ -177,25 +183,25 @@ Set-Location F:/JavaProject/BookApplication/api-gateway
 # Terminal catalog-service
 Set-Location F:/JavaProject/BookApplication/catalog-service
 $env:CATALOG_DB_PASSWORD = Read-Host 'Mật khẩu catalog database' -MaskInput
-$env:JWT_ISSUER = 'http://localhost:8083'
-$env:JWT_JWK_SET_URI = 'http://localhost:8083/.well-known/jwks.json'
+$env:JWT_ISSUER = 'http://localhost:8081'
+$env:JWT_JWK_SET_URI = 'http://localhost:8081/.well-known/jwks.json'
 $env:JWT_AUDIENCE = 'bookstore'
 .\mvnw.cmd spring-boot:run
 
 # Terminal ai-service
 Set-Location F:/JavaProject/BookApplication/ai-service
 $env:AI_DB_PASSWORD = Read-Host 'Mật khẩu AI database' -MaskInput
-$env:JWT_ISSUER = 'http://localhost:8083'
-$env:JWT_JWK_SET_URI = 'http://localhost:8083/.well-known/jwks.json'
+$env:JWT_ISSUER = 'http://localhost:8081'
+$env:JWT_JWK_SET_URI = 'http://localhost:8081/.well-known/jwks.json'
 $env:JWT_AUDIENCE = 'bookstore'
 $env:GEMINI_API_KEY = Read-Host 'Gemini API key' -MaskInput
 $env:GEMINI_MODEL = Read-Host 'Model Gemini hỗ trợ generateContent và structured output'
 .\mvnw.cmd spring-boot:run
 ```
 
-Các địa chỉ JWT trên là hợp đồng mặc định để BE1 tích hợp, không phải user-service
-đã có sẵn trong workspace. Thay bằng issuer/JWKS thật. Không có tài khoản admin
-mặc định hoặc cơ chế bỏ qua xác thực.
+UserServices trong workspace phát JWT và công bố JWKS tại cổng 8081. Cấu hình
+cặp khóa RSA theo [hướng dẫn JWT](docs/jwt-contract.md); khi triển khai, thay
+issuer/JWKS URI bằng địa chỉ phù hợp. Không có cơ chế bỏ qua xác thực.
 
 Để chạy trực tiếp hai service khi không dùng Eureka, đặt `EUREKA_ENABLED=false`.
 Health: `http://localhost:8084/actuator/health`, `http://localhost:8085/actuator/health`.
@@ -208,6 +214,8 @@ Health kiểm tra ứng dụng/database; không xác nhận Gemini đã có khó
 | AI_DB_URL | jdbc:postgresql://localhost:5434/ai_db |
 | AI_DB_USER / AI_DB_PASSWORD | ai / phải cung cấp mật khẩu |
 | PORT | 8084 ở catalog, 8085 ở AI |
+| SERVER_PORT | 8086 ở inventory (mặc định); có thể ghi đè cổng từng service |
+| INVENTORY_URL | http://localhost:8086 (order gọi inventory) |
 | EUREKA_URL | http://localhost:8761/eureka/ |
 | EUREKA_ENABLED | true |
 | CATALOG_URL | http://localhost:8084 |
@@ -245,6 +253,8 @@ rồi khởi động lại service. Nếu dùng .env, IntelliJ hoặc công cụ
 Swagger hiện chưa được tổng hợp tại gateway cổng 8080.
 
 ## Hợp đồng xác thực
+
+UserServices phát JWT RS256 và công bố JWKS; xem [hướng dẫn khóa và cấu hình](docs/jwt-contract.md).
 
 - Bearer JWT ký RS256, kiểm tra chữ ký qua JWKS, issuer, audience, thời hạn và subject.
 - Claim `sub`: mã người dùng ổn định, không rỗng, tối đa 200 ký tự.
@@ -380,7 +390,7 @@ BE3 gửi một sự kiện cho mỗi sách của đơn đã mua đến
 `http://localhost:8085/internal/ai/purchases` bằng service JWT:
 
 ```json
-{"eventId": "order-123-book-1", "userSubject": "customer-456", "bookId": 1}
+{"eventId": "order-123-book-1", "userSubject": "456", "bookId": 1}
 ```
 
 `eventId` duy nhất (tối đa 150 ký tự); gửi lại cùng payload không tạo thêm lịch sử.

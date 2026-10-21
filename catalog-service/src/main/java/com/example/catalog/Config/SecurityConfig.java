@@ -19,12 +19,10 @@ class SecurityConfig {
     JwtDecoder jwtDecoder(@Value("${security.jwt.jwk-set-uri}") String jwks,
                           @Value("${security.jwt.issuer}") String issuer,
                           @Value("${security.jwt.audience}") String audience) {
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwks).build();
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwks)
+                .jwsAlgorithm(org.springframework.security.oauth2.jose.jws.SignatureAlgorithm.RS256).build();
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
-                JwtValidators.createDefaultWithIssuer(issuer),
-                new JwtClaimValidator<String>("sub", value -> value != null && !value.isBlank() && value.length() <= 200),
-                new JwtClaimValidator<java.util.List<String>>("aud",
-                        values -> values != null && values.contains(audience))));
+                JwtValidators.createDefaultWithIssuer(issuer), jwt -> JwtContract.validateUser(jwt, audience)));
         return decoder;
     }
 
@@ -34,11 +32,10 @@ class SecurityConfig {
         var roles = new JwtGrantedAuthoritiesConverter();
         roles.setAuthoritiesClaimName("roles");
         roles.setAuthorityPrefix("ROLE_");
-        var scopes = new JwtGrantedAuthoritiesConverter();
         var converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            var authorities = new ArrayList<GrantedAuthority>(scopes.convert(jwt));
-            authorities.addAll(roles.convert(jwt));
+            var authorities = new ArrayList<GrantedAuthority>();
+            if ("access".equals(jwt.getClaims().get("type"))) authorities.addAll(roles.convert(jwt));
             return authorities;
         });
         return http.csrf(csrf -> csrf.disable())

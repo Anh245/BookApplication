@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:order_security;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+eureka:
+  client:
+    enabled: false
+security:
+  jwt:
+    issuer: https://issuer.test
+    jwk-set-uri: https://issuer.test/jwks
+    audience: bookstore
+inventory:
+  mock: true
+  service-jwt:
+    secret: YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU=
+
+orders:
+  recovery:
+    enabled: false
+

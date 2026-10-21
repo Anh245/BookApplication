@@ -31,8 +31,8 @@ management:
         include: health,info
 security:
   jwt:
-    issuer: ${JWT_ISSUER:http://localhost:8083}
-    jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8083/.well-known/jwks.json}
+    issuer: ${JWT_ISSUER:http://localhost:8081}
+    jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8081/.well-known/jwks.json}
     audience: ${JWT_AUDIENCE:bookstore}
 
 app:

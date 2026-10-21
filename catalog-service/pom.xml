@@ -43,7 +43,12 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <build><plugins>
+    <build>
+    <testResources>
+        <testResource><directory>src/test/resources</directory></testResource>
+        <testResource><directory>${project.basedir}/../contracts</directory><targetPath>contracts</targetPath></testResource>
+    </testResources>
+    <plugins>
         <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId>
